@@ -62,7 +62,7 @@ namespace simplex_method
                         int flag2 = 0;
                         int razr_str = -1;
                             
-                        for(int z = 0; z < b.Length + 1; z++)
+                        for(int z = 0; z < b.Length; z++)
                         {
                             double k = table[0, z] / table[razr_stolb, z];
                             if (k < min && k > 0)
@@ -123,7 +123,7 @@ namespace simplex_method
                             int flag1 = 0;
                             int razr_str = -1;
                             
-                            for(int z = 0; z < b.Length + 1; z++)
+                            for(int z = 0; z < b.Length; z++)
                             {
                                 double k = table[0, z] / table[razr_stolb, z];
                                 if (k < min && k > 0)
