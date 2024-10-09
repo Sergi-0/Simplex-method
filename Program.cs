@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using simplex_method;
 
 namespace simplex_method
 {
@@ -160,7 +159,8 @@ namespace simplex_method
 
             table1[razr_stolb, razr_str] = 1 / r_e;
 
-            for (int i = 0; i < c.Length + 1; i++) {
+            for (int i = 0; i < c.Length + 1; i++)
+            {
                 if (i != razr_stolb) table1[i, razr_str] = table[i, razr_str] / r_e;
             }
 
@@ -195,15 +195,14 @@ namespace simplex_method
             foreach (object obj in FreeX) { Console.Write(obj + "\t"); }
         }
     }
-}
-
-internal class Program
-{
-    static void Main(string[] args)
+    internal class Program
     {
-        SMX_MD a = new SMX_MD(new double[] { -7,-8,-3 }, new double[,] { { 3,1,1 }, { 1,4,0.5 }, { 1,0,2} }, new double[] { 4,7,8}); // условие задачи принимаются в каноническом виде
-        a.FindOptSolve();
-        a.Print();
-        Console.WriteLine();
+        static void Main(string[] args)
+        {
+            SMX_MD a = new SMX_MD(new double[] { -7, -8, -3 }, new double[,] { { 3, 1, 1 }, { 1, 4, 0.5 }, { 1, 0, 2 } }, new double[] { 4, 7, 8 }); // условие задачи принимаются в каноническом виде
+            a.FindOptSolve();
+            a.Print();
+            Console.WriteLine();
+        }
     }
 }
