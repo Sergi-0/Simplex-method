@@ -102,7 +102,7 @@ namespace simplex_method
             table = table1;
         }
 
-        public bool FindOprSolve()
+        public bool FindOprSolve() // поиск опорного решения
         {
             int l = 0; // счетчик положительных элементов в столбце свободных членов
             for (int t = 0; t < b.Length; t++) if (table[0, t] >= 0) { l++; }
@@ -183,27 +183,25 @@ namespace simplex_method
         {
             for(int i = 0; i < b.Length+1; i++)
             {
-                for(int j = 0;j < c.Length + 1;j++) Console.Write(table[j, i] + "\t");
+                if (i != b.Length) Console.Write(DependX[i] + "\t"); else Console.Write("F" + "\t");
                 
+                for(int j = 0;j < c.Length + 1;j++) Console.Write(Math.Round(table[j, i],2) + "\t"); 
                 Console.WriteLine();
             }
-        }   
-        
-        public void PrintFreeX() // выводит свободные иксы
-        {
+            Console.WriteLine();
             Console.Write("\t");
+            Console.Write("S" + "\t");
             foreach (object obj in FreeX) { Console.Write(obj + "\t"); }
-        }
+        }   
     }
     internal class Program
     {
         static void Main(string[] args)
-        { 
-            SMX_MD a = new SMX_MD(new double[] { -1,2 }, new double[,] { { 1,-1 }, { -3,4 }, { 1,0} }, new double[] { 3,12,5});
+        {
+            SMX_MD a = new SMX_MD(new double[] { -7,-8,-3 }, new double[,] { { 3,1,1 }, { 1,4,0.5 }, { 1,0,2} }, new double[] { 4,7,8}); // условие задачи принимаются в каноническом виде
             a.FindOptSolve();
             a.Print();
             Console.WriteLine();
-            a.PrintFreeX();
         }
     }
 }
