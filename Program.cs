@@ -14,17 +14,25 @@ namespace simplex_method
         private double[,] table; // таблица которую мы будем преобразовывать
         private string[] FreeX; // самая верхняя строчка в таблице, которая содержит свободные иксы
         private string[] DependX; // самый левый столбец содержащий зависимые иксы
+        private string minormax;
 
-        public SMX_MD(double[] c, double[,] A, double[] b)
+        public SMX_MD(double[] c, double[,] A, double[] b, string minormax)
         {
             if (A.GetLength(0) != b.Length || A.GetLength(1) != c.Length)
             {
                 throw new Exception("Неверное соотношение размеров матриц!");
             }
 
-            this.c = c;
+            if (minormax == "min") this.c = c;
+            else
+            {
+                double[] c_temp = new double[c.Length];
+                for (int i = 0; i < c.Length; i++) { c_temp[i] = -1 * c[i]; }
+                this.c = c_temp;
+            }
             this.A = A;
             this.b = b;
+            this.minormax = minormax;
             FillTable();
 
             FreeX = new string[c.Length];
@@ -41,6 +49,12 @@ namespace simplex_method
                 k++;
                 DependX[i] = $"X{k}";
             }
+        }
+
+        public bool Solution()
+        {
+            if (FindOptSolve()) { if (minormax == "max") table[0, b.Length] = -1 * table[0, b.Length]; return true; }
+            return false;
         }
 
         public bool FindOptSolve()
@@ -199,9 +213,8 @@ namespace simplex_method
     {
         static void Main(string[] args)
         {
-            SMX_MD a = new SMX_MD(new double[] { -7, -8, -3 }, new double[,] { { 3, 1, 1 }, { 1, 4, 0.5 }, { 1, 0, 2 } }, new double[] { 4, 7, 8 }); // условие задачи принимаются в каноническом виде
-            a.FindOptSolve();
-            a.Print();
+            SMX_MD a = new SMX_MD(new double[] { 7, 8, 3 }, new double[,] { { 3, 1, 1 }, { 1, 4, 0 }, { 0, 0.5, 2 } }, new double[] { 4, 7, 8 }, "max"); // условие задачи принимаются в каноническом виде
+            if(a.Solution()) a.Print();
             Console.WriteLine();
         }
     }

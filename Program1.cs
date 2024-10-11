@@ -14,17 +14,23 @@ namespace simplex_method2
         private double[,] table; // таблица которую мы будем преобразовывать
         private string[] FreeX; // самая верхняя строчка в таблице, которая содержит свободные иксы
         private string[] DependX; // самый левый столбец содержащий зависимые иксы
+        private string minormax;
 
-        public SMX_MD(double[] c, double[,] A, double[] b)
+        public SMX_MD(double[] c, double[,] A, double[] b, string minormax)
         {
             if (A.GetLength(0) != b.Length || A.GetLength(1) != c.Length)
             {
                 throw new Exception("Неверное соотношение размеров матриц!");
             }
 
-            this.c = c;
+            if (minormax == "min") this.c = c; else {
+                double[] c_temp = new double[c.Length];
+                for (int i = 0; i < c.Length; i++) { c_temp[i] = -1 * c[i]; }
+                this.c = c_temp;
+            }
             this.A = A;
             this.b = b;
+            this.minormax = minormax;
             FillTable();
 
             FreeX = new string[c.Length];
@@ -40,48 +46,54 @@ namespace simplex_method2
             {
                 k++;
                 DependX[i] = $"X{k}";
-            }
+            }   
+        }
+
+        public bool Solution()
+        {
+            if (FindOptSolve()) { if (minormax == "max") table[0,b.Length] = -1 * table[0, b.Length]; return true; }
+            return false;
         }
 
         public bool FindOptSolve()
-        {
-            if (FindOprSolve())
             {
-                int l = 0; // счетчик отрицательных элементов в строке F
-                for (int t = 1; t < c.Length + 1; t++) if (table[t, b.Length] < 0) { l++; }
-                if (l == c.Length) { return true; } // если все элементы в строке F отрицательные и найдено опорное решение, то мы нашли оптимальное решение
-
-                for (int i = 1; i < c.Length + 1; i++)
+                if (FindOprSolve())
                 {
-                    if (table[i, b.Length] > 0)
+                    int l = 0; // счетчик отрицательных элементов в строке F
+                    for (int t = 1; t < c.Length + 1; t++) if (table[t, b.Length] < 0) { l++; }
+                    if (l == c.Length) { return true; } // если все элементы в строке F отрицательные и найдено опорное решение, то мы нашли оптимальное решение
+
+                    for (int i = 1; i < c.Length + 1; i++)
                     {
-                        int razr_stolb = i;
-
-                        double min = 100000; // поиск разрешающей строки
-
-                        int flag2 = 0;
-                        int razr_str = -1;
-
-                        for (int z = 0; z < b.Length; z++)
+                        if (table[i, b.Length] > 0)
                         {
-                            double k = table[0, z] / table[razr_stolb, z];
-                            if (k < min && k > 0)
-                            {
-                                min = k;
-                                razr_str = z;
-                                flag2++;
-                            }
-                        }
+                            int razr_stolb = i;
 
-                        if (flag2 == 0) { continue; }
-                        fix_table(razr_str, razr_stolb);
-                        return FindOptSolve();
+                            double min = 100000; // поиск разрешающей строки
+
+                            int flag2 = 0;
+                            int razr_str = -1;
+
+                            for (int z = 0; z < b.Length; z++)
+                            {
+                                double k = table[0, z] / table[razr_stolb, z];
+                                if (k < min && k > 0)
+                                {
+                                    min = k;
+                                    razr_str = z;
+                                    flag2++;
+                                }
+                            }
+
+                            if (flag2 == 0) { continue; }
+                            fix_table(razr_str, razr_stolb);
+                            return FindOptSolve();
+                        }
                     }
                 }
-            }
 
-            return false;
-        }
+                return false;
+            }
 
         public void FillTable() // начальное заполнение таблицы, используется только в конструкторе
         {
@@ -208,6 +220,13 @@ namespace simplex_method2
             //double[] b = new double[] { -3,-3 };
             //double[,] A = new double[,] { { 3,1,-4,-1 }, { -2,-4,-1,1} };
 
+            SMX_MD t = new SMX_MD(c,A,b,"max"); 
+            if(t.Solution()) t.Print();
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
 
             double[] new_c = new double[b.Length];
             for (int i = 0; i < b.Length; i++) new_c[i] = b[i];
@@ -224,9 +243,12 @@ namespace simplex_method2
                 }
             }
 
-            SMX_MD a = new SMX_MD(new_c, new_A, new_b);
-            a.FindOptSolve();
-            a.Print();
+            SMX_MD a = new SMX_MD(new_c, new_A, new_b, "min");
+            if (a.Solution()) a.Print();
+
+            Console.WriteLine();
+            Console.WriteLine(); 
+            Console.WriteLine();
         }
     }
 }
