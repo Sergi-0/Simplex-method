@@ -8,17 +8,17 @@ namespace simplex_method
 {
     public class SMX_MD
     {
-        private double[] c;
-        private double[,] A;
-        private double[] b;
-        private double[,] table; // таблица которую мы будем преобразовывать
-        private string[] FreeX; // самая верхняя строчка в таблице, которая содержит свободные иксы
-        private string[] DependX; // самый левый столбец содержащий зависимые иксы
-        private string minormax;
+        private double[] c; // массив содержащий коэфициенты при переменных в функции F.
+        private double[,] A; // матрица содержащая коэфициенты при переменны в неравенствах.
+        private double[] b; // массив содержащий числа, которые стоят в правых частях неравенств.
+        private double[,] table; // таблица которую мы будем преобразовывать.
+        private string[] FreeX; // самая верхняя строчка в таблице, которая содержит свободные иксы.
+        private string[] DependX; // самый левый столбец содержащий зависимые иксы.
+        private string minormax; // поле содержащее строку min или max, в зависимости от того, какое значение мы будем искать у функции F.
 
         public SMX_MD(double[] c, double[,] A, double[] b, string minormax)
         {
-            if (A.GetLength(0) != b.Length || A.GetLength(1) != c.Length)
+            if (A.GetLength(0) != b.Length || A.GetLength(1) != c.Length) // проверка чтобы размеры массивов c и b, и матрицы A соответствовали друг другу.
             {
                 throw new Exception("Неверное соотношение размеров матриц!");
             }
@@ -26,7 +26,7 @@ namespace simplex_method
             if (minormax == "min") this.c = c;
             else
             {
-                double[] c_temp = new double[c.Length];
+                double[] c_temp = new double[c.Length]; // создается временный массив c_temp, который будет заполнен коэфициентами из масива c, знак коэфициентов будет зависить от того ищем мы max или min функции F.
                 for (int i = 0; i < c.Length; i++) { c_temp[i] = -1 * c[i]; }
                 this.c = c_temp;
             }
@@ -36,7 +36,7 @@ namespace simplex_method
             FillTable();
 
             FreeX = new string[c.Length];
-            int k = 0; // заполнение свободных иксов
+            int k = 0; // заполнение свободных иксов. Счетчик k понадобится для того, чтобы знать сколько было зависимых иксов. Это нужно чтобы правильно именовать зависимые иксы.
             for (int i = 0; i < c.Length; i++)
             {
                 FreeX[i] = $"X{i + 1}";
@@ -53,7 +53,13 @@ namespace simplex_method
 
         public bool Solution()
         {
-            if (FindOptSolve()) { if (minormax == "max") table[0, b.Length] = -1 * table[0, b.Length]; return true; }
+            Console.WriteLine("Начальная задача: ");
+            Console.WriteLine();
+            Print();
+            Console.WriteLine();
+            Console.WriteLine();
+
+            if (FindOptSolve()) { if (minormax == "max") { table[0, b.Length] = -1 * table[0, b.Length]; Print(); Console.WriteLine(); Console.WriteLine(); } Check(); return true; }
             return false;
         }
 
@@ -71,9 +77,9 @@ namespace simplex_method
                     {
                         int razr_stolb = i;
 
-                        double min = 100000; // поиск разрешающей строки
+                        double min = 100000; // поиск разрешающей строки. Переменная min будет содержать минимальное положительное число. Для начального значение возьмем очень большое положительное число.
 
-                        int flag2 = 0;
+                        int flag2 = 0; // флаг показывает, меняли ли мы переменную min, если flag2 > 0, значит меняли.
                         int razr_str = -1;
 
                         for (int z = 0; z < b.Length; z++)
@@ -132,9 +138,9 @@ namespace simplex_method
                         {
                             int razr_stolb = j;
 
-                            double min = 100000; // поиск разрешающей строки
+                            double min = 100000; // поиск разрешающей строки. Переменная min будет содержать минимальное положительное число. Для начального значение возьмем очень большое положительное число.
 
-                            int flag1 = 0;
+                            int flag1 = 0; // флаг показывает, меняли ли мы переменную min, если flag1 > 0, значит меняли.
                             int razr_str = -1;
 
                             for (int z = 0; z < b.Length; z++)
@@ -192,21 +198,72 @@ namespace simplex_method
             }
 
             table = table1;
+
+            Print();
+            Console.WriteLine();
+            Console.WriteLine();
         }
 
         public void Print() // выводит таблицу
         {
+            Console.Write("\t");
+            Console.Write(" S" + "\t");
+            foreach (object obj in FreeX) { Console.Write(" " + obj + "\t"); }
+            Console.WriteLine();
+            Console.WriteLine();
+
             for (int i = 0; i < b.Length + 1; i++)
             {
                 if (i != b.Length) Console.Write(DependX[i] + "\t"); else Console.Write("F" + "\t");
 
-                for (int j = 0; j < c.Length + 1; j++) Console.Write(Math.Round(table[j, i], 2) + "\t");
+                for (int j = 0; j < c.Length + 1; j++)
+                {
+                    if (table[j, i] >= 0) Console.Write(" " + Math.Round(table[j, i], 2) + "\t"); // этот if нужен для выравнивания столбцов.
+                    else Console.Write(Math.Round(table[j, i], 2) + "\t");
+                }
                 Console.WriteLine();
             }
+            Console.WriteLine("______________________________________________");
+        }
+
+        public void Check() // проверка найденного решение методом подстановки в начальные условия
+        {
+            Console.WriteLine("Проверка решения: ");
             Console.WriteLine();
-            Console.Write("\t");
-            Console.Write("S" + "\t");
-            foreach (object obj in FreeX) { Console.Write(obj + "\t"); }
+            Console.WriteLine("Функция: ");
+            double[] solve_x = new double[table.GetLength(0) + table.GetLength(1) - 2]; // создаем массив иксов, которые решают поставленную задачу, берем их из последней таблицы.
+            string[] str_X = new string[solve_x.Length]; // вспомогательный массив для определения последовательности иксов в массиве solve_x, взятых из последней таблицы table;
+            for (int i = 0; i < solve_x.Length; i++) str_X[i] = $"X{i + 1}";
+
+            for (int i = 0; i < DependX.Length; i++)
+            {
+                int k = Array.IndexOf(str_X, DependX[i]); // переменная для определения номера икса в массиве solve_x
+                solve_x[k] = table[0, i];
+            }
+
+            for (int i = 0; i < solve_x.Length / 2; i++)
+            {
+                if (minormax == "min" && i != solve_x.Length / 2 - 1) Console.Write($"{c[i]}*{solve_x[i]} + ");
+                if (minormax == "min" && i == solve_x.Length / 2 - 1) Console.Write($"{c[i]}*{solve_x[i]} = {table[0, table.GetLength(1) - 1]}");
+                if (minormax == "max" && i != solve_x.Length / 2 - 1) Console.Write($"{-c[i]}*{solve_x[i]} + ");
+                if (minormax == "max" && i == solve_x.Length / 2 - 1) Console.Write($"{-c[i]}*{solve_x[i]} = {table[0, table.GetLength(1) - 1]}");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Неравенства: ");
+
+            for (int i = 0; i < b.Length; i++)
+            {
+                for (int j = 0; j < solve_x.Length / 2; j++)
+                {
+                    if (j != solve_x.Length / 2 - 1) Console.Write($"{A[i, j]}*{solve_x[j]} + ");
+                    if (j == solve_x.Length / 2 - 1) Console.Write($"{A[i, j]}*{solve_x[j]} <= {b[i]}");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine("______________________________________________");
+            Console.WriteLine();
         }
     }
     internal class Program
@@ -214,8 +271,9 @@ namespace simplex_method
         static void Main(string[] args)
         {
             SMX_MD a = new SMX_MD(new double[] { 7, 8, 3 }, new double[,] { { 3, 1, 1 }, { 1, 4, 0 }, { 0, 0.5, 2 } }, new double[] { 4, 7, 8 }, "max"); // условие задачи принимаются в каноническом виде
-            if(a.Solution()) a.Print();
+            if(!a.Solution()) { Console.WriteLine("Решение не найдено"); };
             Console.WriteLine();
         }
     }
-}
+} 
+// последние 2 таблицы отличаются только значение функции
