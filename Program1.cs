@@ -16,6 +16,9 @@ namespace simplex_method2
         private string[] DependX; // самый левый столбец содержащий зависимые иксы.
         private string minormax; // поле содержащее строку min или max, в зависимости от того, какое значение мы будем искать у функции F.
 
+        private int coord_pred_razr_e_st = -1; // вспомогательное поле, содержащее столбец разрешающего элемента на предыдущей итерации
+        private int coord_pred_razr_e_str = -1; // вспомогательное поле, содержащее строку разрешающего элемента на предыдущей итерации
+
         public SMX_MD(double[] c, double[,] A, double[] b, string minormax)
         {
             if (A.GetLength(0) != b.Length || A.GetLength(1) != c.Length) // проверка чтобы размеры массивов c и b, и матрицы A соответствовали друг другу.
@@ -92,7 +95,15 @@ namespace simplex_method2
                             }
 
                             if (flag2 == 0) { continue; }
-                            fix_table(razr_str, razr_stolb);
+
+                            if (razr_str != coord_pred_razr_e_str && razr_stolb != coord_pred_razr_e_st)
+                            {
+                                coord_pred_razr_e_st = razr_stolb;
+                                coord_pred_razr_e_str = razr_str;
+                                fix_table(razr_str, razr_stolb);
+                            }
+                            else continue;
+
                             return FindOptSolve();
                         }
                     }
@@ -154,7 +165,13 @@ namespace simplex_method2
 
                             if (flag1 == 0) { continue; }
 
-                            fix_table(razr_str, razr_stolb);
+                            if (razr_str != coord_pred_razr_e_str && razr_stolb != coord_pred_razr_e_st)
+                            {
+                                coord_pred_razr_e_st = razr_stolb;
+                                coord_pred_razr_e_str = razr_str;
+                                fix_table(razr_str, razr_stolb);
+                            }
+                            else continue;
 
                             return FindOprSolve();
                         }
@@ -269,9 +286,9 @@ namespace simplex_method2
         static void Main(string[] args)
         {
 
-            double[] c = new double[] { 7, 8, 3 };
-            double[] b = new double[] { 4, 7, 8 };
-            double[,] A = new double[,] { { 3, 1, 1 }, { 1,4,0 }, { 0,0.5,2 } };
+            double[] c = new double[] { 7,8,3 };
+            double[] b = new double[] { 4,7,8 };
+            double[,] A = new double[,] { { 3,1,1 }, { 1,4,0 }, { 0,0.5,2 } };
 
             SMX_MD t = new SMX_MD(c,A,b,"max");
             if (!t.Solution()) { Console.WriteLine("Решение не найдено"); };
